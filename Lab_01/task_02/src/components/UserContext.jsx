@@ -4,7 +4,7 @@ import { createContext, useContext } from "react";
 const UserContext = createContext();
 
 // Кастомный хук для использования данных
-export default const useUser = () => {
+const useUser = () => {
     const context = useContext(UserContext);
 
     if (!context) {
@@ -13,3 +13,5 @@ export default const useUser = () => {
 
     return context;
 }
+
+export { UserContext, useUser };
