@@ -1,6 +1,5 @@
-<pre>
-```javascript
 
+```javascript
 // Универсальная обертка для выполнения API запросов с обработкой ошибок
 async function apiRequest(endpoint, options = {}) {
     const BASE_URL = 'https://api.example.com';
@@ -11,25 +10,27 @@ async function apiRequest(endpoint, options = {}) {
     };
 
     try {
+        // 1. Выполняем запрос
         const response = await fetch(url, {
             ...options,
             headers: {
                 ...defaultHeaders,
                 ...options.headers
-            },
-
-            // Проверка на HTTP ошибки (4хх и 5хх статусы), так как fetch их не выбрасывает сам
-
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.message || `HTTP error: ${response.status}`);
             }
+        }); // Здесь закрываем fetch
 
-            return await response.json();
-        } catch (error) }
+        // 2. Проверка на HTTP ошибки (4xx и 5xx), так как fetch сам не кидает catch на них
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `HTTP error: ${response.status}`);
+        }
+
+        // 3. Возвращаем данные
+        return await response.json();
+
+    } catch (error) { // Исправлена скобка здесь
         console.error('API Request Error:', error.message);
-        throw error;
+        throw error; // Пробрасываем ошибку дальше
     }
 }
 ```
-</pre>
