@@ -1,0 +1,12 @@
+{
+    "name": "lab_05_task_1",
+    "version": "1.0.0",
+    "description": "Modernizing legacy JavaScript code to ES6+ standards",
+    "type": "module",
+    "main": "modernized/main.mjs",
+    "scripts": {
+        "start": "node modernized/main.mjs"
+    },
+    "author": "Aliar",
+    "license": "MIT"
+}
