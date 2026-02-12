@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Modular Calculator</title>
+    <style>
+        .spacer { height: 100vh; background: #f0f0f0; } /* Чтобы было куда скроллить */
+        #history-section { border-top: 2px solid black; padding: 20px; }
+    </style>
+</head>
+<body>
+    <h1 id="title"></h1>
+    <div id="display" style="font-size: 2em; background: #ddd; padding: 10px;">0</div>
+    
+    <button id="add-btn">Add 10 + 5</button>
+    <button id="adv-btn">Load Advanced Mode</button>
+
+    <div class="spacer">Скролль вниз, чтобы загрузить историю...</div>
+
+    <div id="history-section">
+        <h3>History</h3>
+        <ul id="history-list">История еще не загружена.</ul>
+    </div>
+
+    <script type="module" src="app.mjs"></script>
+</body>
+</html>

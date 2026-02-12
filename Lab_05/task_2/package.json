@@ -1,0 +1,9 @@
+{
+  "name": "lab05-task2-modular-calc",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Modular Calculator with static and dynamic imports",
+  "scripts": {
+    "start": "npx serve ."
+  }
+}
