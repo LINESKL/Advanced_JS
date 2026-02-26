@@ -11,7 +11,7 @@ class ConfigManager {
     }
 
     get(key) {
-        return this.config(key);
+        return this.config[key];
     }
 
     set(key, value) {
