@@ -1,6 +1,6 @@
-import { EmailNotification } from "./notifications/EmailNotification";
-import { SMSNotification } from "./notifications/SMSNotification";
-import { PushNotification } from "./notifications/PushNotification";
+import { EmailNotification } from "./notifications/EmailNotification.js";
+import { SMSNotification } from "./notifications/SMSNotification.js";
+import { PushNotification } from "./notifications/PushNotification.js";
 
 export class NotificationFactory {
     static create(type, options) {
@@ -16,7 +16,7 @@ export class NotificationFactory {
         }
     }
 
-    static getSuppportedTypes() {
+    static getSupportedTypes() {
         return ['email', 'sms', 'push'];
     }
 }
