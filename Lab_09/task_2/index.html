@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Smart Home Demo - Lab 09 Task 2</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        padding: 20px;
+        line-height: 1.6;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+      .log {
+        background: #f4f4f4;
+        padding: 15px;
+        border-radius: 5px;
+        height: 300px;
+        overflow-y: auto;
+        font-family: monospace;
+        border: 1px solid #ccc;
+      }
+      .controls {
+        margin-bottom: 20px;
+      }
+      button {
+        padding: 10px 15px;
+        cursor: pointer;
+        margin-right: 10px;
+      }
+      h2 {
+        color: #333;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Smart Home Demo (Mediator & Command)</h1>
+      <p>
+        Check the console and the log below to see automation and history in
+        action.
+      </p>
+
+      <div class="controls">
+        <h2>Devices & Actions</h2>
+        <button id="btn-light-on">Living Room Light ON</button>
+        <button id="btn-light-off">Living Room Light OFF</button>
+        <button id="btn-undo">Undo Last Action</button>
+        <button id="btn-redo">Redo Action</button>
+      </div>
+
+      <div class="controls">
+        <h2>Automation Scenarios</h2>
+        <button id="btn-security-arm">Arm Security System</button>
+        <button id="btn-temp-high">Set Temp to 30°C</button>
+      </div>
+
+      <h2>Activity Log</h2>
+      <div id="log" class="log"></div>
+    </div>
+
+    <script type="module">
+      import { HomeMediator } from "./mediator/HomeMediator.js";
+      import { CommandManager } from "./commands/CommandManager.js";
+      import { Light } from "./devices/Light.js";
+      import { Thermostat } from "./devices/Thermostat.js";
+      import { SecuritySystem } from "./devices/SecuritySystem.js";
+      import {
+        LightOnCommand,
+        LightOffCommand,
+      } from "./commands/LightCommands.js";
+
+      // Setup Logger
+      const logElement = document.getElementById("log");
+      const originalLog = console.log;
+      console.log = (...args) => {
+        originalLog(...args);
+        const msg = args.join(" ");
+        const entry = document.createElement("div");
+        entry.textContent = `> ${msg}`;
+        logElement.appendChild(entry);
+        logElement.scrollTop = logElement.scrollHeight;
+      };
+
+      // 1. Initialize Patterns
+      const mediator = new HomeMediator();
+      const commandManager = new CommandManager();
+
+      // 2. Create Devices
+      const livingRoomLight = new Light("LivingRoomLight", "Living Room");
+      const mainThermostat = new Thermostat("MainThermostat", "Hallway");
+      const houseSecurity = new SecuritySystem(
+        "HouseSecurity",
+        "Main Entrance",
+      );
+
+      // 3. Register to Mediator
+      mediator.registerDevice(livingRoomLight);
+      mediator.registerDevice(mainThermostat);
+      mediator.registerDevice(houseSecurity);
+
+      // 4. Setup Automation Rules
+      mediator.addRule({
+        name: "Eco Mode",
+        condition: (device, state) =>
+          device.type === "SecuritySystem" && state.armed === true,
+        action: (devices) => {
+          console.log(
+            "[Rule: Eco Mode] Turning off all lights and lowering heat...",
+          );
+          const light = devices.get("LivingRoomLight");
+          const thermo = devices.get("MainThermostat");
+          if (light) light.turnOff();
+          if (thermo) thermo.setTemperature(18);
+        },
+      });
+
+      mediator.addRule({
+        name: "Cooling Protection",
+        condition: (device, state) =>
+          device.type === "Thermostat" && state.temperature > 28,
+        action: (devices) => {
+          console.log(
+            "[Rule: Cooling Protection] It's too hot! Logic for AC could be here.",
+          );
+        },
+      });
+
+      // UI Event Listeners
+      document.getElementById("btn-light-on").onclick = () => {
+        commandManager.execute(new LightOnCommand(livingRoomLight));
+      };
+
+      document.getElementById("btn-light-off").onclick = () => {
+        commandManager.execute(new LightOffCommand(livingRoomLight));
+      };
+
+      document.getElementById("btn-undo").onclick = () => {
+        commandManager.undo();
+      };
+
+      document.getElementById("btn-redo").onclick = () => {
+        commandManager.redo();
+      };
+
+      document.getElementById("btn-security-arm").onclick = () => {
+        houseSecurity.arm();
+      };
+
+      document.getElementById("btn-temp-high").onclick = () => {
+        mainThermostat.setTemperature(30);
+      };
+
+      console.log("--- Smart Home System Initialized ---");
+    </script>
+  </body>
+</html>
