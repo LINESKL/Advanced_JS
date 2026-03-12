@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>News Aggregator Demo</title>
+  </head>
+  <body>
+    <h1>News Aggregator</h1>
+    <p>Check the browser console to see the real-time event updates!</p>
+
+    <!-- Подключаем главный скрипт как модуль -->
+    <script type="module">
+      import { NewsPublisher } from "./publisher/NewsPublisher.js";
+      import { EmailNotifier } from "./subscribers/EmailNotifier.js";
+      import { PushNotifier } from "./subscribers/PushNotifier.js";
+      import { DashboardWidget } from "./subscribers/DashboardWidget.js";
+
+      // 1. Создаем Издателя
+      const techCrunch = new NewsPublisher("TechCrunch");
+      const bbc = new NewsPublisher("BBC News");
+
+      // 2. Создаем Подписчиков
+      const emailSub = new EmailNotifier("user@example.com");
+      const mobileSub = new PushNotifier("iPhone-12");
+      const webDashboard = new DashboardWidget("Main-Page-Widget");
+
+      // 3. Подписываемся на темы
+      emailSub.subscribe(["tech", "sports"]);
+      mobileSub.subscribe(["urgent"]);
+      webDashboard.subscribe(["tech", "business"]);
+
+      // 4. Демонстрация работы (события)
+      console.log("--- Starting News Feed ---");
+
+      techCrunch.publishArticle(
+        "tech",
+        "New JS Design Patterns",
+        "Content about patterns",
+        "normal",
+      );
+
+      bbc.publishArticle(
+        "urgent",
+        "BREAKING NEWS",
+        "Earthquake detected!",
+        "urgent",
+      );
+
+      techCrunch.publishArticle(
+        "business",
+        "Stock Market Update",
+        "Stocks rising",
+        "normal",
+      );
+
+      // 5. Демонстрация отписки
+      console.log("--- Unsubscribing Email ---");
+      emailSub.unsubscribe();
+
+      techCrunch.publishArticle("sports", "Sport event", "Who won?", "normal");
+    </script>
+  </body>
+</html>

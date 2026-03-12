@@ -1,6 +1,6 @@
-import eventBus from "../pubsub/EventBus";
+import eventBus from "../pubsub/EventBus.js";
 
-export default class NewsPublisher {
+export class NewsPublisher {
   constructor(name) {
     this.name = name;
     this.articles = [];
@@ -26,8 +26,7 @@ export default class NewsPublisher {
       eventBus.publish("news:urgent", article);
     }
 
-    console.log(`[ $ { this . name }] Published : $ { headline } [ $ { category
-            }] `);
+    console.log(`[${this.name}] Published: ${headline} [${category}]`);
     return article;
   }
   getArticles(category = null) {
