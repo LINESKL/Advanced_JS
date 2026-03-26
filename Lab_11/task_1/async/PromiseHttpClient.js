@@ -37,7 +37,7 @@ class PromiseHttpClient {
       }
 
       const contentType = response.headers.get("content-type");
-      if (contentType && contentType.includes("application/json")) {
+      if (contentType?.includes("application/json")) {
         return await response.json();
       }
 
@@ -52,6 +52,29 @@ class PromiseHttpClient {
   }
 
   get(endpoint, options = {}) {
-    return this.
+    return this.request(endpoint, { ...options, method: "GET" });
+  }
+
+  post(endpoint, data, options = {}) {
+    return this.request(endpoint, {
+      ...options,
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  put(endpoint, data, options = {}) {
+    return this.request(endpoint, {
+      ...options,
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  delete(endpoint, options = {}) {
+    return this.request(endpoint, { ...options, method: "DELETE" });
   }
 }
+
+export { PromiseHttpClient, HttpError };
+export default PromiseHttpClient;
