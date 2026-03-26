@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Async Utilities Demo - Task 2</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0c0e14;
+            --card-bg: rgba(23, 27, 38, 0.7);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-primary: #6366f1;
+            --accent-secondary: #a855f7;
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at top left, rgba(99, 102, 241, 0.15), transparent 400px),
+                radial-gradient(circle at bottom right, rgba(168, 85, 247, 0.15), transparent 400px);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 3rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .tagline { text-align: center; color: var(--text-secondary); margin-bottom: 3rem; }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-secondary);
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .demo-section { display: none; animation: fadeIn 0.4s ease-out; }
+        .demo-section.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .input-group { display: flex; flex-direction: column; gap: 0.5rem; }
+        label { font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; }
+        input {
+            background: rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 0.75rem;
+            border-radius: 10px;
+            color: white;
+            outline: none;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border: none;
+            color: white;
+            padding: 1rem;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+
+        .btn-cancel { background: var(--error); }
+
+        .log-panel {
+            background: #000;
+            border-radius: 15px;
+            padding: 1.5rem;
+            height: 400px;
+            overflow-y: auto;
+            font-family: 'Monaco', monospace;
+            font-size: 0.85rem;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .log-entry { margin-bottom: 0.5rem; line-height: 1.4; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 0.5rem; }
+        .log-time { color: #555; margin-right: 0.8rem; font-size: 0.75rem; }
+        .log-cat { font-weight: 700; margin-right: 0.5rem; }
+        .cat-pipeline { color: var(--accent-primary); }
+        .cat-fetcher { color: var(--success); }
+        .cat-cancel { color: var(--error); }
+        .cat-batch { color: var(--warning); }
+
+        .json-preview { color: #bae6fd; white-space: pre-wrap; margin-top: 0.5rem; display: block; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Advanced Async Utils</h1>
+        <p class="tagline">Interactive playground for DataFetcher, Pipelines, and Cancellable Tasks</p>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showSection('dataFetcher')">DataFetcher</button>
+            <button class="tab-btn" onclick="showSection('pipeline')">AsyncPipeline</button>
+            <button class="tab-btn" onclick="showSection('cancellable')">Cancellable Tasks</button>
+            <button class="tab-btn" onclick="showSection('batcher')">AsyncBatcher</button>
+        </div>
+
+        <!-- DataFetcher Section -->
+        <div id="dataFetcher" class="demo-section active">
+            <div class="card">
+                <h3>Complex User Data Fetching</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Fetch user, posts, and followers in parallel using Promise.all.</p>
+                <div class="controls">
+                    <div class="input-group">
+                        <label>User ID (1-10)</label>
+                        <input type="number" id="df-userId" value="1" min="1" max="10">
+                    </div>
+                    <button class="btn" id="df-runBtn">Fetch Full Details</button>
+                </div>
+                <div class="log-panel" id="df-log"></div>
+            </div>
+        </div>
+
+        <!-- Pipeline Section -->
+        <div id="pipeline" class="demo-section">
+            <div class="card">
+                <h3>Async Pipeline Processing</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Pipeline: Trim -> Uppercase -> Stats -> JSON Wrap</p>
+                <div class="controls">
+                    <div class="input-group" style="grid-column: span 2;">
+                        <label>Source Text</label>
+                        <input type="text" id="pl-text" value="   hello dynamic world of async programming   ">
+                    </div>
+                    <button class="btn" id="pl-runBtn">Execute Pipeline</button>
+                </div>
+                <div class="log-panel" id="pl-log"></div>
+            </div>
+        </div>
+
+        <!-- Cancellable Section -->
+        <div id="cancellable" class="demo-section">
+            <div class="card">
+                <h3>Cancellable Tasks & Fetch</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Start a long-running simulated task and cancel it mid-way.</p>
+                <div class="controls">
+                    <div class="input-group">
+                        <label>Simulated Delay (ms)</label>
+                        <input type="number" id="cn-delay" value="3000">
+                    </div>
+                    <button class="btn" id="cn-startBtn">Start Task</button>
+                    <button class="btn btn-cancel" id="cn-cancelBtn">Cancel Now</button>
+                </div>
+                <div class="log-panel" id="cn-log"></div>
+            </div>
+        </div>
+
+        <!-- Batcher Section -->
+        <div id="batcher" class="demo-section">
+            <div class="card">
+                <h3>Async Batching (Rate Reduction)</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Items are queued and processed only when Batch Size is reached or Timeout occurs.</p>
+                <div class="controls">
+                    <div class="input-group">
+                        <label>Batch Size</label>
+                        <input type="number" id="bt-size" value="5">
+                    </div>
+                    <div class="input-group">
+                        <label>Max Wait (ms)</label>
+                        <input type="number" id="bt-wait" value="1000">
+                    </div>
+                    <button class="btn" id="bt-addBtn">Add Single Item</button>
+                    <button class="btn" id="bt-burstBtn">Add 10 Items</button>
+                </div>
+                <div class="log-panel" id="bt-log"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { DataFetcher } from './async/DataFetcher.js';
+        import { AsyncPipeline, AsyncBatcher } from './async/Pipeline.js';
+        import { TaskRunner } from './async/CancellableFetcher.js';
+
+        // --- Tab Logic ---
+        window.showSection = (id) => {
+            document.querySelectorAll('.demo-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            const btn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick').includes(id));
+            if (btn) btn.classList.add('active');
+        };
+
+        function addLog(panelId, cat, msg, isJson = false) {
+            const panel = document.getElementById(panelId);
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            const time = new Date().toLocaleTimeString();
+            
+            let content = msg;
+            if (isJson) {
+                content = `<span class="json-preview">${JSON.stringify(msg, null, 2)}</span>`;
+            }
+            
+            entry.innerHTML = `<span class="log-time">[${time}]</span><span class="log-cat cat-${cat}">${cat.toUpperCase()}</span> ${content}`;
+            panel.prepend(entry);
+        }
+
+        // --- DataFetcher Demo ---
+        const httpClient = {
+            async get(url) {
+                // Simulation wrapper around Fetch for simple Lab compliance
+                const base = 'https://jsonplaceholder.typicode.com';
+                const res = await fetch(base + url.replace(/ /g, ''));
+                if (!res.ok) throw new Error('Fetch failed');
+                return res.json();
+            }
+        };
+
+        const df = new DataFetcher(httpClient);
+        document.getElementById('df-runBtn').addEventListener('click', async () => {
+            const userId = document.getElementById('df-userId').value;
+            addLog('df-log', 'fetcher', `Initiating parallel fetch for User #${userId}...`);
+            try {
+                const data = await df.fetchUserWithDetails(userId);
+                addLog('df-log', 'fetcher', 'Full details retrieved successfully:', true);
+                addLog('df-log', 'fetcher', data, true);
+            } catch (e) {
+                addLog('df-log', 'fetcher', `Error: ${e.message}`);
+            }
+        });
+
+        // --- Pipeline Demo ---
+        const pipeline = new AsyncPipeline();
+        pipeline.use((data) => data.trim());
+        pipeline.use((data) => {
+            addLog('pl-log', 'pipeline', `Stage: ToUpper -> "${data.toUpperCase()}"`);
+            return data.toUpperCase();
+        });
+        pipeline.use((data) => {
+            const stats = { length: data.length, words: data.split(' ').length };
+            addLog('pl-log', 'pipeline', `Stage: Stats -> ${JSON.stringify(stats)}`);
+            return [data, { stats }]; // Returning [data, context_update]
+        });
+
+        document.getElementById('pl-runBtn').addEventListener('click', async () => {
+            const text = document.getElementById('pl-text').value;
+            addLog('pl-log', 'pipeline', `Executing pipeline on: "${text}"`);
+            const result = await pipeline.execute(text);
+            addLog('pl-log', 'pipeline', `Final Result: "${result}"`);
+        });
+
+        // --- Cancellable Demo ---
+        const runner = new TaskRunner();
+        let currentTaskId = null;
+
+        document.getElementById('cn-startBtn').addEventListener('click', async () => {
+            const delay = parseInt(document.getElementById('cn-delay').value);
+            const { id, task } = runner.add(async () => {
+                addLog('cn-log', 'cancel', `Task ${id} started. Waiting ${delay}ms...`);
+                await new Promise((resolve, reject) => {
+                    const t = setTimeout(resolve, delay);
+                    // Check signal in the task loop
+                    const check = setInterval(() => {
+                        if (task.signal.aborted) {
+                            clearInterval(check);
+                            clearTimeout(t);
+                        }
+                    }, 50);
+                });
+                return 'Long work done!';
+            });
+
+            currentTaskId = id;
+            try {
+                const res = await runner.run(id);
+                addLog('cn-log', 'cancel', `Result of ${id}: ${res}`);
+            } catch (e) {
+                addLog('cn-log', 'cancel', `Task ${id} interrupted: ${e.message}`);
+            }
+        });
+
+        document.getElementById('cn-cancelBtn').addEventListener('click', () => {
+            if (currentTaskId) {
+                addLog('cn-log', 'cancel', `Requesting cancellation for ${currentTaskId}...`);
+                runner.cancel(currentTaskId);
+            }
+        });
+
+        // --- Batcher Demo ---
+        let batcher;
+        function initBatcher() {
+            const size = parseInt(document.getElementById('bt-size').value);
+            const wait = parseInt(document.getElementById('bt-wait').value);
+            batcher = new AsyncBatcher(async (items) => {
+                const timestamp = new Date().toLocaleTimeString();
+                addLog('bt-log', 'batch', `Processing Batch of ${items.length} items: [${items.join(', ')}]`);
+                return items.map(i => `Processed ${i}`);
+            }, { batchSize: size, maxWaitMs: wait });
+        }
+        initBatcher();
+
+        document.getElementById('bt-addBtn').addEventListener('click', async () => {
+            const item = `Item_${Math.floor(Math.random() * 1000)}`;
+            addLog('bt-log', 'batch', `Added ${item} to queue.`);
+            const res = await batcher.add(item);
+            addLog('bt-log', 'batch', `Item ${res} finished.`);
+        });
+
+        document.getElementById('bt-burstBtn').addEventListener('click', () => {
+            addLog('bt-log', 'batch', 'Adding burst of 10 items...');
+            for (let i = 0; i < 10; i++) {
+                (async (idx) => {
+                    const item = `Burst_${idx}`;
+                    const res = await batcher.add(item);
+                    // addLog('bt-log', 'batch', `${res}`);
+                })(i);
+            }
+        });
+    </script>
+</body>
+</html>
