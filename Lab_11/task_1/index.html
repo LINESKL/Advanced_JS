@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Async Utilities Demo - AsyncQueue & RateLimiter</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #8b5cf6;
+            --success: #10b981;
+            --error: #ef4444;
+            --pending: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 40%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Outfit', sans-serif;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 2rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(59, 130, 246, 0.4);
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        input {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--accent-primary);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .stat-item {
+            background: rgba(15, 23, 42, 0.4);
+            padding: 1rem;
+            border-radius: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .task-list {
+            margin-top: 2rem;
+            max-height: 300px;
+            overflow-y: auto;
+            border-radius: 1rem;
+            padding-right: 0.5rem;
+        }
+
+        .task-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .task-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        .task-item {
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 4px solid var(--pending);
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .task-item.running { border-left-color: var(--accent-primary); }
+        .task-item.completed { border-left-color: var(--success); }
+        .task-item.failed { border-left-color: var(--error); }
+
+        .task-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .task-id { font-weight: 600; font-size: 0.9rem; }
+        .task-duration { font-size: 0.75rem; color: var(--text-secondary); }
+
+        .status-badge {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 2rem;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .badge-pending { background: rgba(245, 158, 11, 0.1); color: var(--pending); }
+        .badge-running { background: rgba(59, 130, 246, 0.1); color: var(--accent-primary); }
+        .badge-completed { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .badge-failed { background: rgba(239, 68, 68, 0.1); color: var(--error); }
+
+        .log-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 1rem;
+            padding: 1rem;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.8rem;
+            height: 250px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .log-entry {
+            margin-bottom: 0.25rem;
+            color: #ccc;
+        }
+
+        .log-timestamp { color: #666; margin-right: 0.5rem; }
+        .log-limiter { color: var(--accent-secondary); font-weight: 600; }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .tagline {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Async Utilities Demo</h1>
+        <p class="tagline">Interactive visualization for AsyncQueue and RateLimiter classes</p>
+
+        <div class="grid">
+            <!-- AsyncQueue Demo -->
+            <div class="card">
+                <h2>AsyncQueue</h2>
+                <div class="controls">
+                    <div class="input-group">
+                        <label>Concurrency (Max Parallel Tasks)</label>
+                        <input type="number" id="concurrency" value="3" min="1" max="10">
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn-primary" id="addTasksBtn">Add 10 Tasks</button>
+                        <button class="btn-secondary" id="clearQueueBtn">Clear</button>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="stat-pending">0</div>
+                        <div class="stat-label">Pending</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="stat-running">0</div>
+                        <div class="stat-label">Running</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="stat-completed">0</div>
+                        <div class="stat-label">Completed</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="stat-failed">0</div>
+                        <div class="stat-label">Failed</div>
+                    </div>
+                </div>
+
+                <div class="task-list" id="taskList">
+                    <!-- Tasks will appear here -->
+                </div>
+            </div>
+
+            <!-- RateLimiter Demo -->
+            <div class="card">
+                <h2>RateLimiter</h2>
+                <div class="controls">
+                    <div class="input-group">
+                        <label>Max Requests</label>
+                        <input type="number" id="maxRequests" value="5" min="1">
+                    </div>
+                    <div class="input-group">
+                        <label>Window (ms)</label>
+                        <input type="number" id="windowMs" value="5000" min="500">
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn-primary" id="burstBtn">Send Burst (10 reqs)</button>
+                    </div>
+                </div>
+
+                <div class="log-container" id="limiterLog">
+                    <div class="log-entry">System ready. Waiting for requests...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { AsyncQueue, RateLimiter } from './async/AsyncQueue.js';
+
+        let queue = new AsyncQueue(3);
+        let taskIdCounter = 0;
+
+        // --- AsyncQueue Demo ---
+        const concurrencyInput = document.getElementById('concurrency');
+        const addTasksBtn = document.getElementById('addTasksBtn');
+        const clearQueueBtn = document.getElementById('clearQueueBtn');
+        const taskList = document.getElementById('taskList');
+
+        function updateStats() {
+            const stats = queue.getStats();
+            document.getElementById('stat-pending').textContent = stats.pending;
+            document.getElementById('stat-running').textContent = stats.running;
+            document.getElementById('stat-completed').textContent = stats.completed;
+            document.getElementById('stat-failed').textContent = stats.failed;
+        }
+
+        function createTaskElement(id, duration) {
+            const el = document.createElement('div');
+            el.className = 'task-item';
+            el.id = `task-${id}`;
+            el.innerHTML = `
+                <div class="task-info">
+                    <span class="task-id">Task #${id}</span>
+                    <span class="task-duration">${duration}ms duration</span>
+                </div>
+                <span class="status-badge badge-pending">Pending</span>
+            `;
+            return el;
+        }
+
+        function updateTaskStatus(id, status) {
+            const el = document.getElementById(`task-${id}`);
+            if (!el) return;
+            
+            el.className = `task-item ${status}`;
+            const badge = el.querySelector('.status-badge');
+            badge.className = `status-badge badge-${status}`;
+            badge.textContent = status;
+            
+            if (status === 'completed' || status === 'failed') {
+                setTimeout(() => {
+                    // el.style.opacity = '0.5';
+                }, 1000);
+            }
+        }
+
+        addTasksBtn.addEventListener('click', () => {
+            const count = 10;
+            queue.concurrency = parseInt(concurrencyInput.value);
+            
+            for (let i = 0; i < count; i++) {
+                const id = ++taskIdCounter;
+                const duration = 500 + Math.random() * 2000;
+                
+                const taskEl = createTaskElement(id, Math.round(duration));
+                taskList.prepend(taskEl);
+
+                queue.add(() => {
+                    updateTaskStatus(id, 'running');
+                    updateStats();
+                    
+                    return new Promise((resolve, reject) => {
+                        setTimeout(() => {
+                            if (Math.random() > 0.1) {
+                                resolve(`Success ${id}`);
+                                updateTaskStatus(id, 'completed');
+                            } else {
+                                reject(`Error ${id}`);
+                                updateTaskStatus(id, 'failed');
+                            }
+                            updateStats();
+                        }, duration);
+                    });
+                });
+                updateStats();
+            }
+        });
+
+        clearQueueBtn.addEventListener('click', () => {
+            queue.clear();
+            taskList.innerHTML = '';
+            updateStats();
+        });
+
+        // --- RateLimiter Demo ---
+        const maxRequestsInput = document.getElementById('maxRequests');
+        const windowMsInput = document.getElementById('windowMs');
+        const burstBtn = document.getElementById('burstBtn');
+        const logContainer = document.getElementById('limiterLog');
+
+        function addLog(msg) {
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            const time = new Date().toLocaleTimeString();
+            entry.innerHTML = `<span class="log-timestamp">[${time}]</span> <span class="log-limiter">Limiter:</span> ${msg}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        // Override console.log just for the limiter if possible, 
+        // or just manually log when acquire() waits.
+        // Since we can't easily capture only class logs, we'll implement a custom limiter call.
+        
+        burstBtn.addEventListener('click', async () => {
+            const max = parseInt(maxRequestsInput.value);
+            const window = parseInt(windowMsInput.value);
+            const limiter = new RateLimiter(max, window);
+
+            addLog(`Starting burst of 10 requests (Max: ${max}, Window: ${window}ms)`);
+            
+            for (let i = 1; i <= 10; i++) {
+                (async (index) => {
+                    addLog(`Request #${index} attempting to acquire...`);
+                    await limiter.acquire();
+                    addLog(`Request #${index} <span style="color: var(--success)">EXECUTED</span>`);
+                })(i);
+            }
+        });
+    </script>
+</body>
+</html>
