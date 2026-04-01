@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task 2 - Event Delegation (Todo List)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .controls input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .controls select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .controls button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .controls button:hover {
+            background-color: #45a049;
+        }
+        .generate-btn {
+            background-color: #2196F3 !important;
+        }
+        .generate-btn:hover {
+            background-color: #1976D2 !important;
+        }
+        #todo-container {
+            background: white;
+            border-radius: 5px;
+            padding: 15px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .todo-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            gap: 10px;
+        }
+        .todo-item:last-child {
+            border-bottom: none;
+        }
+        .todo-item.high {
+            background-color: #ffebee;
+            border-left: 4px solid #f44336;
+        }
+        .todo-item.normal {
+            background-color: #e8f5e9;
+            border-left: 4px solid #4CAF50;
+        }
+        .todo-text {
+            flex: 1;
+        }
+        .todo-item.completed .todo-text {
+            text-decoration: line-through;
+            color: #999;
+        }
+        .actions {
+            display: flex;
+            gap: 5px;
+        }
+        .actions button {
+            padding: 5px 10px;
+            font-size: 12px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            background-color: #e0e0e0;
+        }
+        .actions button:hover {
+            background-color: #bdbdbd;
+        }
+        .actions button[data-action="delete"] {
+            background-color: #ffcdd2;
+        }
+        .actions button[data-action="delete"]:hover {
+            background-color: #ef9a9a;
+        }
+    </style>
+</head>
+<body>
+    <h1>Task 2 - Event Delegation (Todo List)</h1>
+    
+    <div class="controls">
+        <input type="text" id="todo-input" placeholder="Enter task...">
+        <select id="priority-select">
+            <option value="normal">Normal</option>
+            <option value="high">High</option>
+        </select>
+        <button id="add-btn">Add</button>
+        <button id="generate-btn" class="generate-btn">Generate 1000</button>
+    </div>
+    
+    <div id="todo-container"></div>
+
+    <script type="module">
+        import { TodoList } from './todo/TodoList.js';
+
+        const todo = new TodoList('todo-container');
+
+        document.getElementById('add-btn').addEventListener('click', () => {
+            const input = document.getElementById('todo-input');
+            const priority = document.getElementById('priority-select').value;
+            if (input.value.trim()) {
+                todo.addItem(input.value.trim(), priority);
+                input.value = '';
+            }
+        });
+
+        document.getElementById('generate-btn').addEventListener('click', () => {
+            todo.generateItems(1000);
+        });
+
+        document.getElementById('todo-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('add-btn').click();
+            }
+        });
+    </script>
+</body>
+</html>
