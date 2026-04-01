@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lab 08 - Flyweight Pattern</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        background-color: #f0f0f0;
+      }
+      h1 {
+        color: #333;
+      }
+      canvas {
+        border: 2px solid #333;
+        background-color: #87ceeb;
+      }
+      .controls {
+        margin: 20px 0;
+      }
+      button {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        margin: 0 10px;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      #stats {
+        margin-top: 20px;
+        padding: 15px;
+        background-color: #fff;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      }
+      #stats h3 {
+        margin-top: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Flyweight Pattern - Forest</h1>
+
+    <div class="controls">
+      <button id="generateBtn">Generate Forest (10000 trees)</button>
+      <button id="renderBtn">Render</button>
+      <button id="clearBtn">Clear</button>
+    </div>
+
+    <canvas id="canvasId" width="800" height="600"></canvas>
+
+    <div id="stats">
+      <h3>Statistics</h3>
+      <p id="statsContent">No trees generated yet.</p>
+    </div>
+
+    <script type="module">
+      import { ForestRender } from "./forest/ForestRender.js";
+
+      const forestRender = new ForestRender();
+
+      document.getElementById("generateBtn").addEventListener("click", () => {
+        forestRender.generateForest(10000);
+        document.getElementById("statsContent").textContent =
+          'Forest generated. Click "Render" to display.';
+      });
+
+      document.getElementById("renderBtn").addEventListener("click", () => {
+        const stats = forestRender.render();
+        document.getElementById("statsContent").innerHTML = `
+                Total trees: ${stats.totalTrees}<br>
+                Unique flyweights: ${stats.uniqueFlyweights}<br>
+                Memory saved: ${stats.memorySaved}
+            `;
+      });
+
+      document.getElementById("clearBtn").addEventListener("click", () => {
+        forestRender.trees = [];
+        forestRender.ctx.clearRect(
+          0,
+          0,
+          forestRender.canvas.width,
+          forestRender.canvas.height,
+        );
+        document.getElementById("statsContent").textContent = "Canvas cleared.";
+      });
+    </script>
+  </body>
+</html>

@@ -1,4 +1,4 @@
-import TreeFactory from "./TreeFactory.js";
+import treeFactory from "../tree/TreeFactory.js";
 
 export class ForestRender {
   constructor() {
@@ -67,6 +67,6 @@ export class ForestRender {
         tree.rotation,
       );
     }
-    return TreeFactory.getStats();
+    return treeFactory.getStats();
   }
 }
