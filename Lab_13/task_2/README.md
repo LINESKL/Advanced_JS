@@ -1,73 +1,43 @@
-# React + TypeScript + Vite
+# Task 2 — Custom React Hooks
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+### useApi, useFetch, useDebounce, useLocalStorage
 
-Currently, two official plugins are available:
+## Описание
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Реализация набора кастомных React-хуков для решения типичных задач: работа с API, debounce-задержки, localStorage и управление сетевыми запросами с кэшированием.
 
-## React Compiler
+## Ключевые аспекты
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **useApi** — универсальный хук для вызова асинхронных функций с abort-контролем, состояниями loading/error/data и методом `refetch`
+- **useFetch** — HTTP-клиент с автоматическим кэшированием (Map), AbortController для отмены устаревших запросов и защитой от race conditions
+- **useDebounce** — задержка обновления значения для оптимизации частых обновлений (например, при вводе в поле поиска)
+- **useLocalStorage** — реактивная обёртка над localStorage с Two-Way Binding и обработкой ошибок
 
-## Expanding the ESLint configuration
+## Структура
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+task_2/
+├── src/
+│   ├── hooks/
+│   │   ├── useApi.ts          # Универсальный API-хук с abort
+│   │   ├── useFetch.ts        # Fetch с кэшированием
+│   │   ├── useDebounce.ts     # Debounce-хук
+│   │   └── useLocalStorage.ts # Реактивный localStorage
+│   ├── App.tsx
+│   └── main.tsx
+├── index.html
+└── package.json
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Результаты
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+1. Понимание паттерна кастомных хуков для инкапсуляции повторяющейся логики
+2. Навык работы с AbortController для предотвращения утечек ресурсов
+3. Практический опыт кэширования данных на клиенте
+4. Создание реактивных обёрток над браузерными API
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
+
+**Выполнил:** Нурканат Алиар
+**Курс:** Advanced JavaScript
+**Дата:** 2026-04-09
