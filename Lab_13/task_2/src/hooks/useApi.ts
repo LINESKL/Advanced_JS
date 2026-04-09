@@ -8,10 +8,11 @@ export function useApi(apiFunction, dependencies = []) {
   const isMounted = useRef(true);
   const abortController = useRef(null);
 
+  const depsWithApi = [apiFunction, ...dependencies];
   const execute = useCallback(async () => {
     if (abortController.current) abortController.current.abort();
     abortController.current = new AbortController();
-    
+
     setLoading(true);
     setError(null);
     try {
@@ -29,7 +30,7 @@ export function useApi(apiFunction, dependencies = []) {
     } finally {
       if (isMounted.current) setLoading(false);
     }
-  }, [apiFunction, ...dependencies]);
+  }, depsWithApi);
 
   useEffect(() => {
     isMounted.current = true;

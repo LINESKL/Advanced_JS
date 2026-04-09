@@ -9,10 +9,11 @@ export function useFetch(url, options = {}) {
   const [error, setError] = useState(null);
   const abortControllerRef = useRef(null);
 
+  const optionsString = JSON.stringify(options);
   const fetchData = useCallback(async () => {
     if (!url) return;
     abortControllerRef.current = new AbortController();
-    const cacheKey = `${url}:${JSON.stringify(options)}`;
+    const cacheKey = `${url}:${optionsString}`;
 
     // Проверка кеша
     const cached = cache.get(cacheKey);
@@ -27,7 +28,7 @@ export function useFetch(url, options = {}) {
       const response = await fetch(url, { ...options, signal: abortControllerRef.current.signal });
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const result = await response.json();
-      
+
       cache.set(cacheKey, { data: result, timestamp: Date.now() });
       setData(result);
     } catch (err) {
@@ -35,7 +36,7 @@ export function useFetch(url, options = {}) {
     } finally {
       setLoading(false);
     }
-  }, [url, JSON.stringify(options)]);
+  }, [url, optionsString, options]);
 
   useEffect(() => {
     fetchData();
