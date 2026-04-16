@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Islands Architecture E-Commerce</title>
+    <style>
+        body { font-family: 'Inter', sans-serif; max-width: 800px; margin: auto; }
+        .ocean-text { color: #555; line-height: 1.6; }
+        .island { border: 1px solid #ddd; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .island-title { font-size: 0.9em; color: green; text-transform: uppercase; letter-spacing: 1px; }
+        .preview-box { width: 100%; height: 50px; background: #000; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Premium Mechanical Keyboard</h1>
+    <p class="ocean-text">This paragraph is served statically. No JavaScript is required to read this beautiful product description. The architecture ensures that only highly interactive widgets are loaded.</p>
+
+    <!-- Island 1: The Shopping Cart Counter -->
+    <div class="island" data-island-type="counter">
+        <div class="island-title">Interactive Island: Counter</div>
+        <p>Units: <span class="count-display">0</span></p>
+        <button class="btn-decrease">-</button>
+        <button class="btn-increase">+</button>
+    </div>
+
+    <p class="ocean-text">More static text explaining the delivery constraints and warranty policies. Completely dead HTML.</p>
+
+    <!-- Island 2: The Color Picker -->
+    <div class="island" data-island-type="color-picker">
+        <div class="island-title">Interactive Island: Color Picker</div>
+        <div class="preview-box"></div>
+        <button data-color="#000">Black</button>
+        <button data-color="#0066cc">Blue</button>
+        <button data-color="#dc3545">Red</button>
+    </div>
+
+    <!-- The engine script -->
+    <script type="module" src="./islands-engine.js"></script>
+</body>
+</html>
