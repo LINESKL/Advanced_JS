@@ -1,4 +1,4 @@
-const http = require("http");
+const http = require("node:http");
 
 // Симуляция получения данных из БД
 const fetchUserData = async () => {

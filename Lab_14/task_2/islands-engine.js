@@ -25,7 +25,7 @@ const IslandRegistry = {
 
         buttons.forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const hex = e.target.getAttribute('data-color');
+                const hex = e.target.dataset.color;
                 preview.style.backgroundColor = hex;
             });
         });
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                const type = entry.target.getAttribute('data-island-type');
+                const type = entry.target.dataset.islandType;
                 if (IslandRegistry[type]) {
                     IslandRegistry[type](entry.target);
                     // Прекращаем наблюдение после гидрации
