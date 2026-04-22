@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Progressive Web App with Service Worker">
+  <meta name="theme-color" content="#667eea">
+  <title>Lab 12 Task 2 — Service Worker PWA</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>📱 PWA Demo</h1>
+      <p class="subtitle">Service Worker & Offline Capabilities</p>
+    </header>
+
+    <!-- Service Worker Status -->
+    <section class="card">
+      <h2>🔧 Service Worker Status</h2>
+      <div class="status-grid">
+        <div class="status-item">
+          <span class="status-label">Registration:</span>
+          <span class="status-value" id="swStatus">Checking...</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">State:</span>
+          <span class="status-value" id="swState">-</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Network:</span>
+          <span class="status-value" id="networkStatus">Online</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Cache Size:</span>
+          <span class="status-value" id="cacheSize">0 items</span>
+        </div>
+      </div>
+      <div class="button-group">
+        <button id="updateSW" class="btn btn-primary">Update SW</button>
+        <button id="clearCache" class="btn btn-secondary">Clear Cache</button>
+        <button id="unregisterSW" class="btn btn-danger">Unregister</button>
+      </div>
+    </section>
+
+    <!-- API Data Fetcher -->
+    <section class="card">
+      <h2>🌐 API Data Fetcher</h2>
+      <p>Test offline caching with API requests</p>
+      <div class="input-group">
+        <input type="text" id="apiUrl" placeholder="Enter API URL"
+               value="https://jsonplaceholder.typicode.com/posts/1">
+        <button id="fetchData" class="btn btn-primary">Fetch Data</button>
+      </div>
+      <div class="result-box" id="apiResult">
+        <p class="placeholder">Click "Fetch Data" to load content</p>
+      </div>
+    </section>
+
+    <!-- Offline Queue -->
+    <section class="card">
+      <h2>📤 Offline Queue</h2>
+      <p>Actions saved when offline and synced when back online</p>
+      <div class="input-group">
+        <input type="text" id="queueMessage" placeholder="Enter a message">
+        <button id="addToQueue" class="btn btn-primary">Add to Queue</button>
+      </div>
+      <div class="queue-list" id="queueList">
+        <p class="placeholder">No items in queue</p>
+      </div>
+      <button id="syncQueue" class="btn btn-success">Sync Queue</button>
+    </section>
+
+    <!-- Push Notifications -->
+    <section class="card">
+      <h2>🔔 Push Notifications</h2>
+      <p>Test browser notifications (requires permission)</p>
+      <div class="button-group">
+        <button id="requestNotification" class="btn btn-primary">Request Permission</button>
+        <button id="sendNotification" class="btn btn-success" disabled>Send Test Notification</button>
+      </div>
+      <div class="notification-status" id="notificationStatus">
+        <p>Permission: <strong id="notificationPermission">default</strong></p>
+      </div>
+    </section>
+
+    <!-- Cache Inspector -->
+    <section class="card">
+      <h2>💾 Cache Inspector</h2>
+      <p>View cached resources</p>
+      <button id="inspectCache" class="btn btn-primary">Inspect Cache</button>
+      <div class="cache-list" id="cacheList">
+        <p class="placeholder">Click "Inspect Cache" to view cached items</p>
+      </div>
+    </section>
+
+    <!-- Install Prompt -->
+    <div class="install-banner" id="installBanner" style="display: none;">
+      <div class="install-content">
+        <span>📱 Install this app on your device</span>
+        <div>
+          <button id="installBtn" class="btn btn-success">Install</button>
+          <button id="dismissInstall" class="btn btn-secondary">Dismiss</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
