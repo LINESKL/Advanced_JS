@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lab 12 Task 1 — Web Workers Demo</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: white;
+      text-align: center;
+      margin-bottom: 2rem;
+      font-size: 2.5rem;
+    }
+
+    .workers-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .worker-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .worker-card h2 {
+      color: #667eea;
+      margin-bottom: 1rem;
+      font-size: 1.5rem;
+    }
+
+    .input-group {
+      margin-bottom: 1rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: #555;
+      font-weight: 500;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.3s;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    button {
+      width: 100%;
+      padding: 0.75rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .result {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #f5f5f5;
+      border-radius: 8px;
+      min-height: 60px;
+    }
+
+    .result h3 {
+      color: #667eea;
+      margin-bottom: 0.5rem;
+      font-size: 1rem;
+    }
+
+    .result p {
+      color: #555;
+      line-height: 1.6;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #e0e0e0;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 0.5rem;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+      width: 0%;
+      transition: width 0.3s;
+    }
+
+    #imageCanvas {
+      width: 100%;
+      max-width: 300px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      margin-top: 1rem;
+    }
+
+    .file-input-wrapper {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+      width: 100%;
+    }
+
+    .file-input-wrapper input[type=file] {
+      position: absolute;
+      left: -9999px;
+    }
+
+    .file-input-label {
+      display: block;
+      padding: 0.75rem;
+      background: #f5f5f5;
+      border: 2px dashed #667eea;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .file-input-label:hover {
+      background: #e8ebf9;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .stat-item {
+      background: white;
+      padding: 0.5rem;
+      border-radius: 6px;
+      text-align: center;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: #888;
+      text-transform: uppercase;
+    }
+
+    .stat-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #667eea;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚀 Web Workers Demo</h1>
+
+    <div class="workers-grid">
+      <!-- Prime Number Calculator -->
+      <div class="worker-card">
+        <h2>🔢 Prime Calculator</h2>
+        <div class="input-group">
+          <label>Range Start:</label>
+          <input type="number" id="primeStart" value="1" min="1">
+        </div>
+        <div class="input-group">
+          <label>Range End:</label>
+          <input type="number" id="primeEnd" value="10000" min="1">
+        </div>
+        <button id="calculatePrimes">Calculate Primes</button>
+        <div class="result" id="primeResult">
+          <h3>Result:</h3>
+          <p>Click "Calculate Primes" to start</p>
+          <div class="progress-bar">
+            <div class="progress-fill" id="primeProgress"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Array Sorter -->
+      <div class="worker-card">
+        <h2>📊 Array Sorter</h2>
+        <div class="input-group">
+          <label>Array Size:</label>
+          <input type="number" id="arraySize" value="10000" min="100" step="1000">
+        </div>
+        <div class="input-group">
+          <label>Algorithm:</label>
+          <select id="sortAlgorithm">
+            <option value="quick">Quick Sort</option>
+            <option value="merge">Merge Sort</option>
+            <option value="bubble">Bubble Sort</option>
+          </select>
+        </div>
+        <button id="sortArray">Sort Array</button>
+        <div class="result" id="sortResult">
+          <h3>Result:</h3>
+          <p>Click "Sort Array" to start</p>
+        </div>
+      </div>
+
+      <!-- Image Processor -->
+      <div class="worker-card">
+        <h2>🖼️ Image Processor</h2>
+        <div class="input-group">
+          <label>Select Image:</label>
+          <div class="file-input-wrapper">
+            <input type="file" id="imageInput" accept="image/*">
+            <label for="imageInput" class="file-input-label">
+              Choose an image file
+            </label>
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Filter:</label>
+          <select id="imageFilter">
+            <option value="grayscale">Grayscale</option>
+            <option value="invert">Invert</option>
+            <option value="sepia">Sepia</option>
+            <option value="blur">Blur</option>
+          </select>
+        </div>
+        <button id="processImage" disabled>Apply Filter</button>
+        <canvas id="imageCanvas"></canvas>
+        <div class="result" id="imageResult">
+          <h3>Result:</h3>
+          <p>Upload an image to start</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Performance Stats -->
+    <div class="worker-card">
+      <h2>📈 Performance Stats</h2>
+      <div class="stats">
+        <div class="stat-item">
+          <div class="stat-label">Active Workers</div>
+          <div class="stat-value" id="activeWorkers">0</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Total Tasks</div>
+          <div class="stat-value" id="totalTasks">0</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Avg Time</div>
+          <div class="stat-value" id="avgTime">0ms</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Main Thread</div>
+          <div class="stat-value" id="mainThread">Free</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
